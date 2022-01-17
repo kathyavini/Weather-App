@@ -1,10 +1,10 @@
-export function createNewElement(
+export default function createNewElement(
   type,
   classes = null,
   text = null,
-  attributes = null
+  attributes = null,
 ) {
-  let createdElement = document.createElement(type);
+  const createdElement = document.createElement(type);
 
   if (classes) {
     createdElement.classList.add(...classes);
@@ -15,7 +15,7 @@ export function createNewElement(
   }
 
   if (attributes) {
-    for (let key in attributes) {
+    for (const key in attributes) {
       createdElement.setAttribute(key, attributes[key]);
     }
   }

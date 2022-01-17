@@ -1,76 +1,194 @@
-import "./css/styles.css";
-import SunCalc from "./suncalc";
-// import { createNewElement } from './utils';
-import Suncalc from "./suncalc";
+import './css/styles.css';
+import createNewElement from './utils';
+import countryCodes from './countryCodes';
+import { getWeather, getWeatherSimple } from './api';
+import weatherIcons from './weatherIcons';
 
-// Default location Vancouver
+// Set up page
+const body = document.querySelector('body');
+const container = createNewElement('div', ['container']);
+body.appendChild(container);
+
+export default container;
+
+// Set up singleton to hold display data
 const location = {
-  latitude: "49.213",
-  longitude: "-123.105"
+  latitude: '',
+  longitude: '',
+  mainWeather: 'Weather Unavailable',
+  weatherDescription: '',
+  weatherIcon: '',
+  currentTemp: '',
+  feelsLike: '',
+  city: '',
+  state: '',
+  countryCode: '',
+  country: '',
+};
+
+// Populate data
+function processReturnedInfo(weatherInfo) {
+  [
+    location.latitude,
+    location.longitude,
+    location.mainWeather,
+    location.weatherDescription,
+    location.weatherIcon,
+    location.currentTemp,
+    location.feelsLike,
+    location.city,
+    location.countryCode,
+    location.time,
+  ] = weatherInfo;
+  location.country = countryCodes[location.countryCode];
+  console.log({ location });
 }
 
-// One Call API - includes forecast
-async function getWeather(latitude, longitude) {
-  try {
-    const weather = await fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&appid=8f12dfab0de38099e0b5a7a2ddc45e37`,
-      { mode: "cors" }
+// Set up DOM (couldn't get this working with module exports)
+
+// Input search bar
+const form = createNewElement('form');
+const input = createNewElement('input', null, null, {
+  type: 'search',
+  placeholder: 'Search City',
+});
+
+form.appendChild(input);
+container.appendChild(form);
+
+form.addEventListener('submit', (ev) => {
+  ev.preventDefault();
+  pageLoad(input.value)
+    .then(() => {
+      populateWeatherCard();
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log({ location });
+    });
+});
+
+// Info display card
+const temperatureMode = 'Celsius';
+const infoCard = createNewElement('div', ['infoCard']);
+
+const now = new Date();
+const dateValue = now.toLocaleDateString([], {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+const timeValue = now.toLocaleTimeString([], {
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const currentDateTime = createNewElement(
+  'p',
+  ['currentTime'],
+  `${dateValue}, ${timeValue}`,
+);
+
+infoCard.appendChild(currentDateTime);
+
+const infoWrapper = createNewElement('div', ['infoWrapper']);
+container.appendChild(infoWrapper);
+
+const cityHeading = createNewElement('h1', ['city']);
+const countryHeading = createNewElement('h2', ['country']);
+
+const tempLine = createNewElement('div', ['tempBox']);
+const temperatureMain = createNewElement('p', ['tempMain']);
+const degreeNotation = createNewElement('p', ['degree']);
+const feelsLike = createNewElement('p', ['feelsLike']);
+
+tempLine.appendChild(temperatureMain);
+tempLine.appendChild(degreeNotation);
+
+infoCard.append(cityHeading, countryHeading, tempLine, feelsLike);
+
+infoWrapper.appendChild(infoCard);
+
+const iconCard = createNewElement('div', ['iconCard']);
+const icon = createNewElement('img', ['icon']);
+const iconLabel = createNewElement('p', ['icon-label']);
+
+iconCard.append(icon, iconLabel);
+infoWrapper.appendChild(iconCard);
+
+function populateWeatherCard() {
+  // Only the one-call API returns named timezone;
+  // The simple call returns a timezone offset; not sure how to use that to display a local time
+
+  // const now = new Date();
+  // const locationDate = now.toLocaleDateString([], {
+  //   year: "numeric",
+  //   month: "long",
+  //   day: "numeric",
+  //   timeZone: location.timeZone,
+  // });
+  // const locationTime = now.toLocaleTimeString([], {
+  //   hour: "2-digit",
+  //   minute: "2-digit",
+  //   timeZone: location.timeZone,
+  // });
+
+  // const locationDateTime = `${locationDate}, ${locationTime}`;
+  // currentDateTime.textContent = locationDateTime;
+
+  cityHeading.textContent = location.city;
+
+  if (location.state) {
+    countryHeading.textContent = `${location.state}, ${location.country}`;
+  } else {
+    countryHeading.textContent = location.country;
+  }
+
+  if (temperatureMode === 'Celsius') {
+    temperatureMain.textContent = Math.round(
+      convertCelsius(location.currentTemp),
     );
-    const weatherData = await weather.json();
-    console.log({ weatherData });
-  } catch (err) {
-    console.log(err);
+    degreeNotation.textContent = '°C';
+    feelsLike.textContent = `Feels like ${Math.round(
+      convertCelsius(location.feelsLike),
+    )}°`;
+  } else {
+    temperatureMain.textContent = convertFahreinheit(location.currentTemp);
+    degreeNotation.textContent = '°F';
+    feelsLike.textContent = `Feels like ${Math.round(
+      convertFahreinheit(location.feelsLike),
+    )}°`;
   }
+
+  const iconURL = matchWeatherToIcon();
+  icon.setAttribute('src', iconURL);
+  iconLabel.textContent = location.weatherDescription;
 }
 
-// Geolocation via IP (first choice)
-async function getLocationFromIP() {
-  try {
-    const locationIP = await fetch(`http://ip-api.com/json/`, { mode: "cors" });
-    const locationIPData = await locationIP.json();
-    console.log({ locationIPData });
-  } catch (err) {
-    console.log(err);
-  }
+function matchWeatherToIcon() {
+  return `../src/svg/${weatherIcons[location.weatherIcon]}.svg`;
 }
 
-// Coordinates from Geolocation API (pop-up for user)
-function queryLocation() {
-  navigator.geolocation.getCurrentPosition((position) => {
-    location.latitude = position.coords.latitude;
-    location.longitude = position.coords.longitude;
-  });
-}
-
-
-// Convert geolocation coordinates to address
-async function getLocationFromCoords(latitude, longitude) {
-  try {
-    const location = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`,
-      { mode: "cors" }
-    );
-    const locationData = await location.json();
-    console.log({ locationData });
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-getLocationFromIP();
-getLocationFromCoords(location.latitude, location.longitude);
-// getWeather(latitude, longitude);
-
-function getCelcius(Kelvin) {
+function convertCelsius(Kelvin) {
   return Kelvin - 273.15;
 }
 
-function getFahreinheit(Kelvin) {
+function convertFahreinheit(Kelvin) {
   return ((Kelvin - 273.15) * 9) / 5 + 32;
 }
 
+// Run on page load and on form submit
+async function pageLoad(input) {
+  const returnedInfo = await getWeatherSimple(input);
+  processReturnedInfo(returnedInfo);
+}
 
-let now = new Date();
-console.log(SunCalc.getMoonIllumination(now));
-
-console.log(SunCalc.getMoonTimes(now, location.latitude, location.longitude));
+// Start with default location Vancouver
+pageLoad('Vancouver')
+  .then(() => {
+    populateWeatherCard();
+  })
+  .catch((err) => {
+    console.log(err);
+    console.log({ location });
+  });

@@ -1,0 +1,155 @@
+:root {
+    --background-color: #191A19;
+    --main-font: #f5f5f7;
+    --accent: #D8E9A8;
+    --accent2: #9daa9b;
+    --accent3: #1E5128;
+  }
+
+* {
+    /* border: 2px lightgreen solid; */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+    background-color: var(--background-color);
+    color: var(--main-font);
+    font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    padding-block: 10px;
+    gap: 10px;
+}
+
+form {
+    align-self: start;
+    margin-left: 2vw;
+}
+
+input {
+    background-color: transparent;
+    color: var(--main-font);
+    font-size: 1.2rem;
+    font-family: 'IBM Plex Mono', monospace;
+    border: none;
+    outline: none;
+    transition: outline 1s;
+    padding: 5px;
+    margin-inline: 5px;
+    border-radius: 2px;
+}
+
+input:focus {
+    outline: 1px solid var(--accent2);
+}
+
+.infoWrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+}
+
+
+.infoCard {
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    text-align:left;
+}
+
+
+.currentTime {
+    font-family: 'IBM Plex Serif', serif;
+    font-weight: bold;
+    color: var(--accent2);
+    font-size: clamp(0.889rem, 1vw + 1rem, 1.778rem);
+    min-width: max-content;
+}
+
+.city {
+    font-family: 'IBM Plex Serif', serif;
+    font-size: clamp(2.125rem, 3vw + 1rem, 3.75rem);
+}
+
+.country {
+    font-size: 1.5rem;
+}
+
+
+.tempBox {
+    display: flex;
+}
+
+.tempMain {
+    font-size: clamp(4rem, 4vw + 3rem, 6rem);
+}
+
+.degree {
+    font-size: clamp(3rem, 4vw + 2rem, 4rem);
+}
+
+.feelsLike {
+    font-size: clamp(0.889rem, 1vw + 1rem, 1.778rem);
+}
+
+.iconCard {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.icon {
+    width: 15rem;
+    height: 15rem;
+}
+
+@media (hover: none) {
+    
+    .icon {
+        width: 10rem;
+        height: 10rem;
+    }
+
+    .infoWrapper {
+        flex-flow: column nowrap;
+    }
+
+}
+
+@media (hover: none) and (orientation: landscape) {
+
+    .container {
+        gap: 0px;
+    }
+
+    .infoWrapper {
+        flex-flow: row nowrap;
+        line-height: 2.5rem;
+    }
+
+    .infoCard {
+        width: 40vw;
+    }
+
+    .iconCard {
+        width: 30vw;
+    }
+
+    .icon {
+        margin-bottom: -2rem;
+    }
+
+}
