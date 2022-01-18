@@ -49,7 +49,6 @@ function processReturnedInfo(weatherInfo) {
     location.time,
   ] = weatherInfo;
   location.country = countryCodes[location.countryCode];
-  console.log({ location });
 }
 
 // For latitude, longitude query
@@ -62,8 +61,6 @@ function processReturnedInfoCoords(weatherInfo) {
     location.feelsLike,
     location.time,
   ] = weatherInfo;
-
-  console.log({ location });
 }
 
 // Set up DOM (couldn't get this working with module exports)
@@ -96,8 +93,6 @@ form.addEventListener("submit", async (ev) => {
 
   const coords = await getLocationFromInput(input.value);
 
-  console.log("Received back " + coords);
-
   if (coords === "City Not Found") {
     input.value = "City not found";
     return;
@@ -109,12 +104,8 @@ form.addEventListener("submit", async (ev) => {
   // And get the address from the ID not from the lat
   const addressInfo = await getAddressFromId(location.id);
 
-  console.log("Received back " + addressInfo);
-
   [location.city, location.state, location.country, location.countryCode] =
     addressInfo;
-
-  console.log({ location });
 
   weatherLoadCoord(location.latitude, location.longitude)
     .then(() => {
@@ -128,22 +119,9 @@ form.addEventListener("submit", async (ev) => {
 // Info display card
 const temperatureMode = "Celsius";
 const infoCard = createNewElement("div", ["infoCard"]);
-
-const now = new Date();
-const dateValue = now.toLocaleDateString([], {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
-const timeValue = now.toLocaleTimeString([], {
-  hour: "2-digit",
-  minute: "2-digit",
-});
-
 const currentDateTime = createNewElement(
   "p",
   ["currentTime"],
-  `${dateValue}, ${timeValue}`
 );
 
 infoCard.appendChild(currentDateTime);
@@ -151,7 +129,7 @@ infoCard.appendChild(currentDateTime);
 const infoWrapper = createNewElement("div", ["infoWrapper"]);
 container.appendChild(infoWrapper);
 
-const cityHeading = createNewElement("h1", ["city"]);
+const cityHeading = createNewElement("h1", ["city"], "Loading Weather...");
 const countryHeading = createNewElement("h2", ["country"]);
 
 const tempLine = createNewElement("div", ["tempBox"]);
@@ -167,7 +145,7 @@ infoCard.append(cityHeading, countryHeading, tempLine, feelsLike);
 infoWrapper.appendChild(infoCard);
 
 const iconCard = createNewElement("div", ["iconCard"]);
-const icon = createNewElement("img", ["icon"]);
+const icon = createNewElement("img", ["icon"], null, {'src': './svg/windsock.svg'});
 const iconLabel = createNewElement("p", ["icon-label"]);
 
 iconCard.append(icon, iconLabel);
@@ -176,7 +154,7 @@ infoWrapper.appendChild(iconCard);
 function populateWeatherCard() {
   // Only the one-call API returns named timezone; the simple call returns a timezone offset and I think I would need an external package to use that to convert to local time
 
-  console.log(`Calling date formatting with timezone ${location.time}`);
+  // console.log(`Calling date formatting with timezone ${location.time}`);
 
   const now = new Date();
   const locationDate = now.toLocaleDateString([], {
@@ -224,7 +202,7 @@ function populateWeatherCard() {
 }
 
 function matchWeatherToIcon() {
-  return `../src/svg/${weatherIcons[location.weatherIcon]}.svg`;
+  return `./svg/${weatherIcons[location.weatherIcon]}.svg`;
 }
 
 function convertCelsius(Kelvin) {
@@ -265,19 +243,12 @@ async function useUserLocation(position) {
     location.longitude
   );
 
-  console.log("received back from address query: ")
-  console.log({ addressInfo });
-
   [
     location.city,
     location.state,
     location.country,
     location.countryCode,
   ] = addressInfo;
-
-  console.log("calling weather with the coords and this info: ");
-
-  console.log({ location });
 
   weatherLoadCoord(location.latitude, location.longitude)
     .then(() => {

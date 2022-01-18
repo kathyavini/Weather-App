@@ -6,7 +6,7 @@ export async function getWeather(latitude, longitude) {
     );
     const weatherData = await weather.json();
 
-    console.log({ weatherData });
+    // console.log({ weatherData });
 
     const mainWeather = weatherData.current.weather[0].main;
     const weatherDescription = weatherData.current.weather[0].description;
@@ -36,7 +36,7 @@ export async function getWeatherSimple(city) {
     { mode: 'cors' },
   );
   const weatherData = await weather.json();
-  console.log({ weatherData });
+  // console.log({ weatherData });
   const mainWeather = weatherData.weather[0].main;
   const weatherDescription = weatherData.weather[0].description;
   const weatherIcon = weatherData.weather[0].icon;
@@ -69,7 +69,7 @@ export async function getLocationFromInput(inputString) {
       { mode: 'cors' },
     );
     const addressData = await address.json();
-    console.log({ addressData });
+    // console.log({ addressData });
 
     if (!addressData[0]) {
       return "City Not Found";
@@ -98,7 +98,7 @@ export async function getAddressFromCoords(latitude, longitude) {
     );
     const addressData = await address.json();
     
-    console.log({ addressData });
+    // console.log({ addressData });
 
 
 
@@ -119,8 +119,6 @@ export async function getAddressFromCoords(latitude, longitude) {
       city = addressData.address[placeType];
     }
 
-    console.log("returning as place name: " + city);
-
     const state = addressData.address.state;
     const country = addressData.address.country;
     const countryCode = addressData.address.country_code.toUpperCase();
@@ -136,7 +134,7 @@ export async function getAddressFromCoords(latitude, longitude) {
 export async function getAddressFromId(id) {
   try {
 
-    console.log( "Fetching address data using the ID " + id);
+    // console.log( "Fetching address data using the ID " + id);
 
     const address = await fetch(
       `https://nominatim.openstreetmap.org/lookup?osm_ids=${id}&format=json`,
@@ -144,12 +142,12 @@ export async function getAddressFromId(id) {
     );
     const addressData = await address.json();
 
-    console.log({ addressData });
+    // console.log({ addressData });
 
 
     const placeType = Object.keys(addressData[0].address)[0];
     let name = addressData[0].address[placeType];
-    console.log({ name });
+    // console.log({ name });
 
     const state = addressData[0].address.state;
     const country = addressData[0].address.country;

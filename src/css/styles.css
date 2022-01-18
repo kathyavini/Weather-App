@@ -55,9 +55,9 @@ input:focus {
 }
 
 .infoWrapper {
+    flex: 1;
     display: flex;
     flex-flow: row nowrap;
-    justify-content: center;
 }
 
 
@@ -117,7 +117,10 @@ input:focus {
 }
 
 @media (hover: none) {
-    
+    .container {
+        gap: 5vh;
+    }
+
     .icon {
         width: 10rem;
         height: 10rem;
@@ -125,6 +128,12 @@ input:focus {
 
     .infoWrapper {
         flex-flow: column nowrap;
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .infoCard {
+        max-width: 95vw;
     }
 
 }
@@ -137,7 +146,6 @@ input:focus {
 
     .infoWrapper {
         flex-flow: row nowrap;
-        line-height: 2.5rem;
     }
 
     .infoCard {
