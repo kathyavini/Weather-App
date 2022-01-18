@@ -78,6 +78,11 @@ export async function getAddressFromCoords(latitude, longitude) {
     );
     const addressData = await address.json();
     console.log({ addressData });
+    const state = addressData.address.state;
+    const country = addressData.address.country;
+    const countryCode = addressData.address.country_code.toUpperCase();
+    const city = addressData.address.city;
+    return [state, country, countryCode, city];
   } catch (err) {
     return err;
   }
@@ -94,7 +99,7 @@ export async function getLocationFromIP() {
   }
 }
 
-// Coordinates from Geolocation API (pop-up for user)
-export function getLocationFromUserQuery() {
-  navigator.geolocation.getCurrentPosition((position) => position);
-}
+// // Coordinates from Geolocation API (pop-up for user)
+// export async function getLocationFromUserQuery() {
+//   return navigator.geolocation.getCurrentPosition((position) => position);
+// }
