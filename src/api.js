@@ -5,13 +5,25 @@ export async function getWeather(latitude, longitude) {
       { mode: 'cors' },
     );
     const weatherData = await weather.json();
+
     console.log({ weatherData });
+
     const mainWeather = weatherData.current.weather[0].main;
-    const weatherDesc = weatherData.current.weather[0].description;
+    const weatherDescription = weatherData.current.weather[0].description;
     const weatherIcon = weatherData.current.weather[0].icon;
     const currentTemp = weatherData.current.temp;
     const feelsLike = weatherData.current.feels_like;
-    return [mainWeather, weatherDesc, weatherIcon, currentTemp, feelsLike];
+    const time = weatherData.timezone;
+    
+    return [
+      mainWeather,
+      weatherDescription,
+      weatherIcon,
+      currentTemp,
+      feelsLike,
+      time,
+    ];
+
   } catch (err) {
     console.log(err);
     return err;
@@ -49,7 +61,8 @@ export async function getWeatherSimple(city) {
   ];
 }
 
-export async function getLocationAndAddressFromInput(inputString) {
+// Lat, lon, and openstreetmap ID
+export async function getLocationFromInput(inputString) {
   try {
     const address = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${inputString}&format=json&limit=1`,
@@ -57,12 +70,17 @@ export async function getLocationAndAddressFromInput(inputString) {
     );
     const addressData = await address.json();
     console.log({ addressData });
-    const { city } = addressData.address;
-    const { state } = addressData.address;
-    const { country } = addressData.address;
-    const latitude = addressData.lat;
-    const longitude = addressData.lon;
-    return [city, state, country, latitude, longitude];
+
+    if (!addressData[0]) {
+      return "City Not Found";
+    }
+
+    const latitude = addressData[0].lat;
+    const longitude = addressData[0].lon;
+    const id = addressData[0].osm_type[0].toUpperCase() + addressData[0].osm_id;
+
+    return [latitude, longitude, id];
+
   } catch (err) {
     console.log({ err });
     return err;
@@ -70,6 +88,8 @@ export async function getLocationAndAddressFromInput(inputString) {
 }
 
 // Convert geolocation coordinates to address
+// Probably will no longer use as it doesn't always
+// return a proper place name
 export async function getAddressFromCoords(latitude, longitude) {
   try {
     const address = await fetch(
@@ -77,12 +97,66 @@ export async function getAddressFromCoords(latitude, longitude) {
       { mode: 'cors' },
     );
     const addressData = await address.json();
+    
     console.log({ addressData });
+
+
+
+    const placeType = Object.keys(addressData.address)[0];
+
+    let city = '';
+    
+    if (addressData.address.city) {
+      city = addressData.address.city;
+    } else if (addressData.address.village) {
+      city = addressData.address.village;
+    } else if (addressData.address.town) {
+      city = addressData.address.town;
+    } else if (addressData.address.county) {
+      city = addressData.address.county;
+    } else {
+      // This might return something weird like your street
+      city = addressData.address[placeType];
+    }
+
+    console.log("returning as place name: " + city);
+
     const state = addressData.address.state;
     const country = addressData.address.country;
     const countryCode = addressData.address.country_code.toUpperCase();
-    const city = addressData.address.city;
-    return [state, country, countryCode, city];
+
+    return [city, state, country, countryCode];
+
+  } catch (err) {
+    return err;
+  }
+}
+
+// Convert geolocation coordinates to address
+export async function getAddressFromId(id) {
+  try {
+
+    console.log( "Fetching address data using the ID " + id);
+
+    const address = await fetch(
+      `https://nominatim.openstreetmap.org/lookup?osm_ids=${id}&format=json`,
+      { mode: 'cors' },
+    );
+    const addressData = await address.json();
+
+    console.log({ addressData });
+
+
+    const placeType = Object.keys(addressData[0].address)[0];
+    let name = addressData[0].address[placeType];
+    console.log({ name });
+
+    const state = addressData[0].address.state;
+    const country = addressData[0].address.country;
+    const countryCode = addressData[0].address.country_code.toUpperCase();
+
+    return [name, state, country, countryCode];
+
   } catch (err) {
     return err;
   }
