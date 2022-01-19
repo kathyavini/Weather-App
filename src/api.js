@@ -72,7 +72,11 @@ export async function getLocationFromInput(inputString) {
     // console.log({ addressData });
 
     if (!addressData[0]) {
-      return "City Not Found";
+      return "City not found";
+    }
+
+    if (!addressData[0].osm_type) {
+      return "Not a city";
     }
 
     const latitude = addressData[0].lat;

@@ -72,29 +72,36 @@ const input = createNewElement("input", null, null, {
   placeholder: "Search City",
 });
 
-form.appendChild(input);
-container.appendChild(form);
+const loadingBar = createNewElement('div', ['loading']);
+const loadingBarAnimation = createNewElement('div', ['loading-bar']);
+loadingBar.appendChild(loadingBarAnimation);
 
-// Simple submit - by city name
-// form.addEventListener("submit", (ev) => {
-//   ev.preventDefault();
-//   weatherLoad(input.value)
-//     .then(() => {
-//       populateWeatherCard();
-//     })
-//     .catch((err) => {
-//       console.log(err);
-//     });
-// });
+const formWarning = createNewElement('p', ['warning']);
+
+form.append(input, loadingBar, formWarning);
+container.appendChild(form);
 
 // Complex submit - using name query to return coordinates
 form.addEventListener("submit", async (ev) => {
   ev.preventDefault();
-
+  loadingBar.classList.add('active');
   const coords = await getLocationFromInput(input.value);
 
-  if (coords === "City Not Found") {
-    input.value = "City not found";
+  if (coords === "City not found") {
+    loadingBar.classList.remove('active');
+    formWarning.textContent = 'City not found';
+    formWarning.classList.add('on');
+    formWarning.addEventListener('transitionend', () => {
+      formWarning.classList.remove('on');
+    })
+    return;
+  } else if (coords === "Not a city") {
+    loadingBar.classList.remove('active');
+    formWarning.textContent = "Please search by place name";
+    formWarning.classList.add('on');
+    formWarning.addEventListener('transitionend', () => {
+      formWarning.classList.remove('on');
+    })
     return;
   }
 
@@ -109,6 +116,8 @@ form.addEventListener("submit", async (ev) => {
 
   weatherLoadCoord(location.latitude, location.longitude)
     .then(() => {
+      loadingBar.classList.remove('active');
+      input.value = '';
       populateWeatherCard();
     })
     .catch((err) => {
@@ -117,7 +126,7 @@ form.addEventListener("submit", async (ev) => {
 });
 
 // Info display card
-const temperatureMode = "Celsius";
+let temperatureMode = "Celsius";
 const infoCard = createNewElement("div", ["infoCard"]);
 const currentDateTime = createNewElement(
   "p",
@@ -142,20 +151,25 @@ tempLine.appendChild(degreeNotation);
 
 infoCard.append(cityHeading, countryHeading, tempLine, feelsLike);
 
+tempLine.addEventListener('click', () => {
+  if (temperatureMode == "Celsius") {
+    temperatureMode = "Fahreinheit";
+  } else {
+    temperatureMode = "Celsius";
+  }
+  printTemps(temperatureMode);
+})
+
 infoWrapper.appendChild(infoCard);
 
 const iconCard = createNewElement("div", ["iconCard"]);
-const icon = createNewElement("img", ["icon"], null, {'src': './svg/windsock.svg'});
+const icon = createNewElement("object", ["icon"], null, {'type': "image/svg+xml", 'data': './svg/windsock.svg'});
 const iconLabel = createNewElement("p", ["icon-label"]);
 
 iconCard.append(icon, iconLabel);
 infoWrapper.appendChild(iconCard);
 
 function populateWeatherCard() {
-  // Only the one-call API returns named timezone; the simple call returns a timezone offset and I think I would need an external package to use that to convert to local time
-
-  // console.log(`Calling date formatting with timezone ${location.time}`);
-
   const now = new Date();
   const locationDate = now.toLocaleDateString([], {
     year: "numeric",
@@ -180,24 +194,11 @@ function populateWeatherCard() {
     countryHeading.textContent = location.country;
   }
 
-  if (temperatureMode === "Celsius") {
-    temperatureMain.textContent = Math.round(
-      convertCelsius(location.currentTemp)
-    );
-    degreeNotation.textContent = "°C";
-    feelsLike.textContent = `Feels like ${Math.round(
-      convertCelsius(location.feelsLike)
-    )}°`;
-  } else {
-    temperatureMain.textContent = convertFahreinheit(location.currentTemp);
-    degreeNotation.textContent = "°F";
-    feelsLike.textContent = `Feels like ${Math.round(
-      convertFahreinheit(location.feelsLike)
-    )}°`;
-  }
+  printTemps(temperatureMode);
+
 
   const iconURL = matchWeatherToIcon();
-  icon.setAttribute("src", iconURL);
+  icon.setAttribute("data", iconURL);
   iconLabel.textContent = location.weatherDescription;
 }
 
@@ -276,4 +277,22 @@ function useDefaultLocation() {
     .catch((err) => {
       console.log(err);
     });
+}
+
+function printTemps(temperatureMode) {
+  if (temperatureMode === "Celsius") {
+    temperatureMain.textContent = Math.round(
+      convertCelsius(location.currentTemp)
+    );
+    degreeNotation.textContent = "°C";
+    feelsLike.textContent = `Feels like ${Math.round(
+      convertCelsius(location.feelsLike)
+    )}°`;
+  } else {
+    temperatureMain.textContent = Math.round(convertFahreinheit(location.currentTemp));
+    degreeNotation.textContent = "°F";
+    feelsLike.textContent = `Feels like ${Math.round(
+      convertFahreinheit(location.feelsLike)
+    )}°`;
+  }
 }

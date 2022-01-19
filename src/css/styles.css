@@ -1,9 +1,14 @@
 :root {
     --background-color: #191A19;
     --main-font: #f5f5f7;
-    --accent: #D8E9A8;
-    --accent2: #9daa9b;
-    --accent3: #1E5128;
+    --accent: #D3F8E2;
+    --warning: #FFAF87;
+
+    /* Loading bar gradient colors */
+    --color1: #D8E9A8;
+    --color2: #4E9F3D;
+    --color3: #1E5128;
+    --color4: #D3F8E2;
   }
 
 * {
@@ -19,7 +24,7 @@ body {
     color: var(--main-font);
     font-size: clamp(1.5rem, 2vw + 1rem, 2.25rem);
     font-family: 'IBM Plex Mono', monospace;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .container {
@@ -35,9 +40,12 @@ body {
 form {
     align-self: start;
     margin-left: 2vw;
+    margin-top: 3vh;
+    z-index: 10;
 }
 
 input {
+    width: 250px;
     background-color: transparent;
     color: var(--main-font);
     font-size: 1.2rem;
@@ -51,13 +59,58 @@ input {
 }
 
 input:focus {
-    outline: 1px solid var(--accent2);
+    outline: 1px solid var(--accent);
+    transition: outline 0s;
+}
+
+.loading {
+    width: 250px;
+    height: 2px;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-inline: 5px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 2s;
+}
+  
+.loading-bar {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg,var(--color1), var(--color2) 17%,var(--color3) 34%, var(--color4) 51%,var(--color1) 68%, var(--color2) 85%, var(--color3));
+    background-size: 300% 100%;
+    animation: progress-animation 2s linear infinite;
+}
+
+.loading.active {
+    transition: opacity 0s;
+    opacity: 1;
+}
+    
+@keyframes progress-animation {
+    0%      { background-position: 100% }
+  100%      { background-position: 0 }
+}
+
+
+.warning {
+    color: var(--warning);
+    transition: opacity 500ms 2.5s;
+    opacity: 0;
+    font-size: 1.2rem;
+    margin-inline: 10px;
+}
+
+.warning.on {
+    opacity: 1;
+    transition: opacity 500ms;
 }
 
 .infoWrapper {
     flex: 1;
     display: flex;
     flex-flow: row nowrap;
+    margin-top: -20vh;
 }
 
 
@@ -72,7 +125,7 @@ input:focus {
 .currentTime {
     font-family: 'IBM Plex Serif', serif;
     font-weight: bold;
-    color: var(--accent2);
+    color: var(--accent);
     font-size: clamp(0.889rem, 1vw + 1rem, 1.778rem);
     min-width: max-content;
 }
@@ -130,6 +183,7 @@ input:focus {
         flex-flow: column nowrap;
         justify-content: flex-start;
         align-items: center;
+        margin-top: 0px;
     }
 
     .infoCard {
