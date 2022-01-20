@@ -14,16 +14,15 @@ export async function getWeather(latitude, longitude) {
     const currentTemp = weatherData.current.temp;
     const feelsLike = weatherData.current.feels_like;
     const time = weatherData.timezone;
-    
-    return [
+
+    return {
       mainWeather,
       weatherDescription,
       weatherIcon,
       currentTemp,
       feelsLike,
       time,
-    ];
-
+    };
   } catch (err) {
     console.log(err);
     return err;
@@ -61,7 +60,7 @@ export async function getWeatherSimple(city) {
   ];
 }
 
-// Lat, lon, and openstreetmap ID
+// Lat, lon, and OpenStreetMap ID
 export async function getLocationFromInput(inputString) {
   try {
     const address = await fetch(
@@ -69,14 +68,14 @@ export async function getLocationFromInput(inputString) {
       { mode: 'cors' },
     );
     const addressData = await address.json();
-    // console.log({ addressData });
 
     if (!addressData[0]) {
-      return "City not found";
+      return 'City not found';
     }
 
+    // Not a city/town/state - I've only seen this data format from entering US zip codes
     if (!addressData[0].osm_type) {
-      return "Not a city";
+      return 'Please search by place name';
     }
 
     const latitude = addressData[0].lat;
@@ -84,7 +83,6 @@ export async function getLocationFromInput(inputString) {
     const id = addressData[0].osm_type[0].toUpperCase() + addressData[0].osm_id;
 
     return [latitude, longitude, id];
-
   } catch (err) {
     console.log({ err });
     return err;
@@ -92,8 +90,7 @@ export async function getLocationFromInput(inputString) {
 }
 
 // Convert geolocation coordinates to address
-// Probably will no longer use as it doesn't always
-// return a proper place name
+// Needed for use with user prompt geolocationAPI only
 export async function getAddressFromCoords(latitude, longitude) {
   try {
     const address = await fetch(
@@ -101,15 +98,11 @@ export async function getAddressFromCoords(latitude, longitude) {
       { mode: 'cors' },
     );
     const addressData = await address.json();
-    
-    // console.log({ addressData });
-
-
 
     const placeType = Object.keys(addressData.address)[0];
 
     let city = '';
-    
+
     if (addressData.address.city) {
       city = addressData.address.city;
     } else if (addressData.address.village) {
@@ -123,13 +116,15 @@ export async function getAddressFromCoords(latitude, longitude) {
       city = addressData.address[placeType];
     }
 
-    const state = addressData.address.state;
-    const country = addressData.address.country;
+    const { state } = addressData.address;
+    const { country } = addressData.address;
     const countryCode = addressData.address.country_code.toUpperCase();
 
-    return [city, state, country, countryCode];
-
+    return {
+      city, state, country, countryCode,
+    };
   } catch (err) {
+    console.log(err);
     return err;
   }
 }
@@ -137,45 +132,24 @@ export async function getAddressFromCoords(latitude, longitude) {
 // Convert geolocation coordinates to address
 export async function getAddressFromId(id) {
   try {
-
-    // console.log( "Fetching address data using the ID " + id);
-
     const address = await fetch(
       `https://nominatim.openstreetmap.org/lookup?osm_ids=${id}&format=json`,
       { mode: 'cors' },
     );
     const addressData = await address.json();
 
-    // console.log({ addressData });
-
-
     const placeType = Object.keys(addressData[0].address)[0];
-    let name = addressData[0].address[placeType];
-    // console.log({ name });
+    const city = addressData[0].address[placeType];
 
-    const state = addressData[0].address.state;
-    const country = addressData[0].address.country;
+    const { state } = addressData[0].address;
+    const { country } = addressData[0].address;
     const countryCode = addressData[0].address.country_code.toUpperCase();
 
-    return [name, state, country, countryCode];
-
+    return {
+      city, state, country, countryCode,
+    };
   } catch (err) {
+    console.log(err);
     return err;
   }
 }
-
-// Geolocation via IP (first choice)
-export async function getLocationFromIP() {
-  try {
-    const locationIP = await fetch('http://ip-api.com/json/', { mode: 'cors' });
-    const locationIPData = await locationIP.json();
-    return locationIPData;
-  } catch (err) {
-    return err;
-  }
-}
-
-// // Coordinates from Geolocation API (pop-up for user)
-// export async function getLocationFromUserQuery() {
-//   return navigator.geolocation.getCurrentPosition((position) => position);
-// }
